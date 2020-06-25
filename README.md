@@ -1,3 +1,4 @@
+
 # sjc - simplified javac
 ___
 
@@ -36,6 +37,50 @@ ___
     - If the specified **outputDir** does not exist, a new directory will be created with the same name.
     - If there's an error creating the new directory, the command will exit with error code **3**.
 
+<details>
+	<summary>Example 1</summary> 
+	
+<p>
+
+	Project // before
+	  ┣ src
+	  ┃   ┗ package
+	  ┃     ┣ subpackageA
+	  ┃     ┃     ┣ Program1.java
+	  ┃     ┃     ┣ Program2.java
+	  ┃     ┃     ┗ Program3.java
+	  ┃     ┗ subpackageB
+	  ┃           ┗ Program4.java
+	  ┗ classes
+</p>
+	
+	Project $ sjc src classes
+
+<p>
+
+	Project // after
+	  ┣ src
+	  ┃   ┗ package
+	  ┃     ┣ subpackageA
+	  ┃     ┃     ┣ Program1.java
+	  ┃     ┃     ┣ Program2.java
+	  ┃     ┃     ┗ Program3.java
+	  ┃     ┗ subpackageB
+	  ┃           ┗ Program4.java
+	  ┗ classes
+	      ┗ package
+	        ┣ subpackageA
+	        ┃     ┣ Program1.class
+	        ┃     ┣ Program2.class
+	        ┃     ┗ Program3.class
+	        ┗ subpackageB
+	              ┗ Program4.class
+	  
+</p>
+	
+</details>
+
+
 #### Execute the program - WIP
 ```shell
     sjc -e outputDir mainClass
@@ -43,3 +88,4 @@ ___
 - **outputDir** - directory in which the compiled classes are located
     - If the specified **outputDir** does not exist, the command will exit with error code **4**.
 - **mainClass** - fully-qualified name of the driver/main class (class containing the main method)
+

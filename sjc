@@ -3,8 +3,8 @@
 # Compiles all .java files under the current directory to the specified directory.
 # author: Jae Park
 
-R="\e[0m"
-B="\e[1m"
+R=$(tput sgr0)
+B=$(tput bold)
 
 RED="\e[31m"
 YELLOW="\e[33m"
@@ -12,13 +12,15 @@ GREEN="\e[32m"
 
 usage() {
     cat << EOF
-sjc by Jae Park
+${B}sjc by Jae Park${R}
 --------------------------------------------------
 Usage: $(basename -- $0) sourceDir outputDir
        $(basename -- $0) -e outputDir mainClass
+       $(basename -- $0) -c directory
 --------------------------------------------------
 For more info, visit https://github.com/JP1128/sjc
 EOF
+    exit 0
 }
 
 info() {
@@ -36,18 +38,61 @@ error() {
     printf "$ERROR   $1\n"
 }
 
-if [ $# -lt 2 ] || [ $# -gt 3 ]; then
-    usage
+[ $# -eq 0 ] && usage
+[ $1 == "-h" ] && usage
+
+
+# execution
+
+if [ $1 == "-e" ]; then
+
+    [ ! $# -eq 3 ] && usage
+
+    CLASSDIR=$2
+    MAINCLASS=$(find "$CLASSDIR" -type f -name "$3.class")
+    
+    if [ ! -e $MAINCLASS ]; then
+        error "Could not locate $3.class"
+        error "Exiting..."
+        exit 6
+    fi
+
+    DIRPATH=$(echo "$(dirname -- $MAINCLASS)" | sed "s/$2//")
+    PATH_TO_CLASS=$(echo "$DIRPATH/$3" | sed 's/\//./' | sed 's/^.//')
+    
+    java -cp $CLASSDIR $PATH_TO_CLASS
     exit 0
 fi
 
-while getopts 'e' opt; do
-    case "${opt}" in
-        e)
-            error "WIP"
-            exit 0         
-    esac
-done
+if [ $1 = "-c" ]; then
+    
+    [ ! $# -eq 2 ] && usage
+
+    BINDIR=$2
+    info "Finding $BINDIR..."
+
+    if [ ! -e $BINDIR ]; then
+        error "$BINDIR does not exist"
+        error "Exiting..."
+        exit 7
+    fi
+
+    info "Cleaning $BINDIR..."
+    rm -r "$BINDIR"/*
+    if [ ! $? -eq 0 ]; then
+        error "Unknown error while cleaning $BINDIR"
+        error "Exiting..."
+        exit 8
+    fi
+    
+    info "Successfully cleaned $BINDIR"
+    exit 0
+fi
+
+
+# compiling
+
+[ ! $# -eq 2 ] && usage
 
 SOURCEDIR=$1
 OUTPUTDIR=$2
@@ -57,6 +102,7 @@ info "Output directory: $OUTPUTDIR"
 
 if [ ! -e $SOURCEDIR ]; then
     error "$SOURCEDIR does not exist"
+    error "Exiting..."
     exit 2
 elif [ ! -e $OUTPUTDIR ]; then
     warning "$OUTPUTDIR does not exist"
@@ -64,6 +110,7 @@ elif [ ! -e $OUTPUTDIR ]; then
     mkdir $OUTPUTDIR
     if [ ! -e $OUTPUTDIR ]; then
         error "Unable to create $OUTPUTDIR"
+        error "Exiting..."
         exit 3
     fi
     info "Successfully created $OUTPUTDIR"
@@ -74,6 +121,7 @@ TEMP=$(mktemp /tmp/sjcXXXXXXX --suffix=.txt)
 
 if [ ! -e $TEMP ]; then
     error "Unable to create $TEMP"
+    error "Exiting..."
     exit 4
 fi
 
@@ -85,8 +133,8 @@ info "Writing source code paths to $TEMP"
 find $SOURCEDIR -name "*.java" > $TEMP
 info "Compiling..."
 
-ERR=$( { javac -d $OUTPUTDIR "@$TEMP"; } 2>&1 )
-CODE="$?"
+ERR=$( { javac -d $OUTPUTDIR @"$TEMP"; } 2>&1 )
+
 if [ -n "$ERR" ]; then
     error "Compile-time Error detected"    
     IFS=''
@@ -102,7 +150,8 @@ if [ -n "$ERR" ]; then
         rm -rf $OUTPUTDIR
         info "Removed $OUTPUTDIR"
     fi
-    
+
+    error "Exiting..."
     exit 5
 fi
 

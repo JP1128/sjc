@@ -38,6 +38,11 @@ error() {
     printf "$ERROR   $1\n"
 }
 
+term() {
+    error "Exiting..."
+    exit $1
+}
+
 [ $# -eq 0 ] && usage
 [ $1 == "-h" ] && usage
 
@@ -49,12 +54,17 @@ if [ $1 == "-e" ]; then
     [ ! $# -eq 3 ] && usage
 
     CLASSDIR=$2
+
+    if [ ! -e $CLASSDIR ]; then
+        error "Could not locate $CLASSDIR"
+        term 6
+    fi
+    
     MAINCLASS=$(find "$CLASSDIR" -type f -name "$3.class")
     
     if [ ! -e $MAINCLASS ]; then
         error "Could not locate $3.class"
-        error "Exiting..."
-        exit 6
+        term 7
     fi
 
     DIRPATH=$(echo "$(dirname -- $MAINCLASS)" | sed "s/$2//")
@@ -64,28 +74,29 @@ if [ $1 == "-e" ]; then
     exit 0
 fi
 
+
+## cleaning
+
 if [ $1 = "-c" ]; then
     
     [ ! $# -eq 2 ] && usage
 
-    BINDIR=$2
-    info "Finding $BINDIR..."
+    DIR=$2
+    info "Finding $DIR..."
 
-    if [ ! -e $BINDIR ]; then
-        error "$BINDIR does not exist"
-        error "Exiting..."
-        exit 7
+    if [ ! -e $DIR ]; then
+        error "$DIR does not exist"
+        term 8
     fi
 
-    info "Cleaning $BINDIR..."
-    rm -r "$BINDIR"/*
+    info "Cleaning $DIR..."
+    rm -r "$DIR"/*
     if [ ! $? -eq 0 ]; then
-        error "Unknown error while cleaning $BINDIR"
-        error "Exiting..."
-        exit 8
+        error "Unknown error while cleaning $DIR"
+        term 9
     fi
     
-    info "Successfully cleaned $BINDIR"
+    info "Successfully cleaned $DIR"
     exit 0
 fi
 
@@ -102,16 +113,14 @@ info "Output directory: $OUTPUTDIR"
 
 if [ ! -e $SOURCEDIR ]; then
     error "$SOURCEDIR does not exist"
-    error "Exiting..."
-    exit 2
+    term 2
 elif [ ! -e $OUTPUTDIR ]; then
     warning "$OUTPUTDIR does not exist"
     info "Creating $OUTPUTDIR..."
     mkdir $OUTPUTDIR
     if [ ! -e $OUTPUTDIR ]; then
         error "Unable to create $OUTPUTDIR"
-        error "Exiting..."
-        exit 3
+        term 3
     fi
     info "Successfully created $OUTPUTDIR"
 fi
@@ -121,8 +130,7 @@ TEMP=$(mktemp /tmp/sjcXXXXXXX --suffix=.txt)
 
 if [ ! -e $TEMP ]; then
     error "Unable to create $TEMP"
-    error "Exiting..."
-    exit 4
+    term 4
 fi
 
 trap "{ rm -f $TEMP; }" EXIT
@@ -151,8 +159,7 @@ if [ -n "$ERR" ]; then
         info "Removed $OUTPUTDIR"
     fi
 
-    error "Exiting..."
-    exit 5
+    term 5
 fi
 
 info "Successfully compiled"

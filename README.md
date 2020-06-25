@@ -2,7 +2,7 @@
 ___
 
 ## DISCLAIMER
-**DO NOT USE THIS SCRIPT IN ANY OF THE GRADED ASSIGNMENT.**
+**DO NOT USE THIS SCRIPT IN ANY OF THE GRADED ASSIGNMENT.**\
 **This script is intended to faciliate the project development process by allowing you to compile and execute your Java project faster through an easier syntax.**
 ___
 

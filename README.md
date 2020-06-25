@@ -44,7 +44,7 @@ ___
 
 	Project // before
 	  ┣ src
-	  ┃   ┗ package
+	  ┃   ┗ apackage
 	  ┃     ┣ subpackageA
 	  ┃     ┃     ┣ Program1.java
 	  ┃     ┃     ┣ Program2.java
@@ -60,7 +60,7 @@ ___
 
 	Project // after
 	  ┣ src
-	  ┃   ┗ package
+	  ┃   ┗ apackage
 	  ┃     ┣ subpackageA
 	  ┃     ┃     ┣ Program1.java
 	  ┃     ┃     ┣ Program2.java
@@ -68,7 +68,7 @@ ___
 	  ┃     ┗ subpackageB
 	  ┃           ┗ Program4.java
 	  ┗ classes
-	      ┗ package
+	      ┗ apackage
 	        ┣ subpackageA
 	        ┃     ┣ Program1.class
 	        ┃     ┣ Program2.class

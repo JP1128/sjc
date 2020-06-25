@@ -13,7 +13,7 @@ ___
     ```
 2. Download the script to the ***bin*** directory with the following command
     ```shell
-        wget -P ~/bin 
+        wget -P ~/bin https://raw.githubusercontent.com/JP1128/sjc/master/sjc
     ```
 3. Change the permission of the downloaded file to enable execution
     ```shell

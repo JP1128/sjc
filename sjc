@@ -20,7 +20,7 @@ Usage: $(basename -- $0) sourceDir outputDir
 --------------------------------------------------
 For more info, visit https://github.com/JP1128/sjc
 EOF
-    exit 0
+    exit 1
 }
 
 info() {

@@ -36,7 +36,7 @@ ___
     - If the specified **outputDir** does not exist, a new directory will be created with the same name.
     - If there's an error creating the new directory, the command will exit with error code **3**.
 
-#### Execute the program
+#### Execute the program - WIP
 ```shell
     sjc -e outputDir mainClass
 ```

@@ -129,15 +129,5 @@ sjc -c dir
 	- The contents in the specified **dir** will be removed.
 	- **dir** will NOT be removed.
 
-## Exit Codes
-| Codes | Task | Meaning |
-| :---: | :---: | :--- |
-| 1 | All | Incorrect syntax |
-| 2 | Compile | **sourceDir** was not found
-| 3 | Compile | Unable to create **outputDir**
-| 4 | Compile | Unable to create temporary file to store path to source codes
-| 5 | Compile | Compile-time errors
-| 6 | Execute | **classesDir** was not found
-| 7 | Execute | Could not locate **mainClass**
-| 8 | Clean | **dir** was not found
-| 9 | Clean | Unkown error while removing the contents of **dir**
+## Changelog
+

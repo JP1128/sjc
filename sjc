@@ -1,0 +1,213 @@
+#!/bin/bash
+
+# Compiles all .java files under the current directory to the specified directory.
+# author: Jae Park
+
+# ANSI formatting
+r=$(tput sgr0)
+b=$(tput bold)
+red=$(tput setaf 1)
+green=$(tput setaf 2)
+yellow=$(tput setaf 3)
+
+# functions
+usage() {
+    cat << EOF
+${b}sjc by Jae Park${r}
+--------------------------------------------------
+Usage: $(basename -- $0) source_dir output_dir
+       $(basename -- $0) output_dir
+       $(basename -- $0)
+       $(basename -- $0) -c dir
+       $(basename -- $0) -h
+--------------------------------------------------
+For more info, visit https://github.com/JP1128/sjc
+EOF
+    exit 1
+}
+
+info() {
+    INFO="$b$green[INFO]$r"
+    printf "$INFO    $1\n"
+}
+
+warning() {
+    WARNING="$b$yellow[WARNING]$r"
+    printf "$WARNING $1\n"
+}
+
+error() {
+    ERROR="$b$red[ERROR]$r"
+    printf "$ERROR   $1\n"
+}
+
+term() {
+    error "Exiting..."
+    exit 1
+}
+
+## help
+[ "$1" == "-h" ] && usage
+
+
+## cleaning
+if [ "$1" == "-c" ]; then
+    
+    [ ! $# -eq 2 ] && usage
+
+    dir=$2
+    info "Finding $dir..."
+
+    if [ ! -d $dir ]; then
+        error "$dir does not exist"
+        term
+    fi
+
+    info "Cleaning $dir..."
+    
+    rm -r ./"$dir"/* 2> /dev/null
+    if [ ! $? -eq 0 ]; then
+        error "Failed to to clean $dir"
+        term
+    fi
+    
+    info "Successfully cleaned $dir"
+
+    read -p "$(info "Delete $dir dir? [y|n]: ")" response
+
+    if [ "$response" == "y" ]; then
+        info "Deleting $dir..."
+        rm -d "$dir"
+
+        if [ ! $? -eq 0 ]; then
+            error "Failed to delete $dir"
+            tern
+        fi
+
+        info "Successfully deleted $dir"
+    fi
+    
+    exit 0
+fi
+
+# compiling
+compile() {
+    source_dir=$1
+    output_dir=$2
+
+    info "source_dir: $source_dir"
+    info "output_dir: $output_dir"
+
+    if [ ! -d $source_dir ]; then
+        error "Could not locate $source_dir"
+        term
+    fi
+
+    if [ ! -d $output_dir ]; then
+        warning "Could not locate $output_dir"
+
+        read -p "$(info "Create $output_dir? [y|n]: ")" response1
+
+        if [ "$response1" == "y" ]; then
+            info "Creating $output_dir..."
+            mkdir "$output_dir"
+
+            if [ ! -d $output_dir ]; then
+                error "Failed to create $output_dir"
+                term
+            fi
+
+            info "Successfully created $output_dir"
+        fi
+    fi
+
+    if [ ! -z "$(ls -A $output_dir)" ]; then
+        warning "$output_dir is not empty"
+
+        read -p "$(info "Empty $output_dir? [y|n]: ")" response3
+
+        if [ "$response3" == "y" ]; then
+            info "Emptying $output_dir..."
+            
+            rm -r ./"$output_dir"/* 2> /dev/null
+            if [ ! $? -eq 0 ]; then
+                error "Failed to empty $dir"
+                term
+            fi
+            
+            info "Successfully cleaned $dir"
+        fi
+    fi
+
+    info "Creating temporary text file for source code paths"
+    temp=$(mktemp /tmp/sjcXXXXXXX --suffix=.txt)
+
+    if [ ! -f $temp ]; then
+        error "Failed to create $temp"
+        term
+    fi
+
+    trap "{ rm -f $temp; }" EXIT
+
+    info "Successfully created $temp"
+    
+    info "Writing source code paths to $temp"
+    find $source_dir -name "*.java" > $temp
+
+    if [ ! -s $temp ]; then
+        error "No java source code was found inside $source_dir"
+        term
+    fi
+    
+    info "Compiling..."
+    err=$( { javac -d $output_dir @"$temp"; } 2>&1 )
+
+    if [ -n "$err" ]; then
+        error "Compile-time Error detected"
+        
+        IFS=''
+        echo "$err" |
+            while read -r line
+            do
+                error "$line"
+            done
+        
+        read -p "$(info "Remove $output_dir? [y|n]: ")" response2
+
+        if [ $response2 == "y" ]; then
+            rm -rf $output_dir
+            info "Removed $output_dir"
+        fi
+
+        term
+    fi
+
+    info "Successfully compiled"
+    info "Ready for execution"
+
+    exit 0
+}
+
+if [ $# -eq 0 ]; then
+    if [ -d "src" ]; then
+        if [ -d "bin" ]; then
+            compile "src" "bin"
+        elif [ -d "class" ]; then
+            compile "src" "class"
+        elif [ -d "classes" ]; then
+            compile "src" "classes"
+        elif [ -d "output" ]; then
+            compile "src" "output"
+        fi
+
+        compile "src" "bin"
+    fi
+
+    error "Could not locate src dir"
+    term
+fi
+
+[ $# -eq 1 ] && compile "$1" "bin"
+[ $# -eq 2 ] && compile "$1" "$2"
+
+usage
